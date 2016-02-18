@@ -44,16 +44,14 @@ class NaiveBayesClassifier(object):
         print(self.training_accuracy_string)
         print(self.classification_accuracy_string)
 
-    # Private
+    # Helper Methods
 
     # Training
     def create_model(self, review_word_counts):
         self.model = DataModel(len(review_word_counts[1]), len(review_word_counts[0]))
         self.model.generate_word_probabilites(review_word_counts[1], review_word_counts[0])
 
-
     # Classification
-
     def classify_reviews(self, parsed_reviews):
         classified_reviews = []
         for review_info in parsed_reviews:

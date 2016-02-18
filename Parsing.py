@@ -66,4 +66,5 @@ class ReviewParser(object):
                     "words" : words
                 }
             )
+        reviews.close()
         return word_lists

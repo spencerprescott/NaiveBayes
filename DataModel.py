@@ -13,7 +13,7 @@ class DataModel(object):
 
     def generate_word_probabilites(self, positive_review_word_count, negative_review_word_count):
         """
-        Loops through the word counts for positive and negative reviews and generates P(X=x|C=c) and P(X=x)
+        Loops through the word counts for positive and negative reviews and generates P(X=x|C=c)te
         :param word_sums:
         :return None:
         """
