@@ -11,13 +11,29 @@ class DataModel(object):
             "negative" : {}  # P(X=x | C=negative)
         }
 
-    def generate_word_probabilites(self, word_sums):
+    def generate_word_probabilites(self, positive_review_word_count, negative_review_word_count):
         """
         Loops through the word counts for positive and negative reviews and generates P(X=x|C=c) and P(X=x)
         :param word_sums:
         :return None:
         """
-        # Do positive first
+        word_sums = {
+            "positive" : {},
+            "negative" : {}
+        }
+        # First get the frequency of each word and separate by positive and negative reviews
+        for positive_review_words, negative_review_words in zip(positive_review_word_count, negative_review_word_count):
+            for word in positive_review_words:
+                if word in word_sums["positive"]:
+                    word_sums["positive"][word] += positive_review_words[word]
+                else:
+                    word_sums["positive"][word] = positive_review_words[word]
+            for word in negative_review_words:
+                if word in word_sums["negative"]:
+                    word_sums["negative"][word] += negative_review_words[word]
+                else:
+                    word_sums["negative"][word] = negative_review_words[word]
+        # Get conditional probability for positive first
         for word in word_sums["positive"]:
             positive_count = word_sums["positive"][word]
             negative_count = 0
@@ -34,15 +50,3 @@ class DataModel(object):
             if word not in self.word_probabilites["positive"]:
                 self.word_probabilites["negative"][word] = 1
                 self.word_probabilites["positive"][word] = 0
-
-
-    def to_json(self):
-        """
-        Returns the JSON representation of the data model
-        :return dict:
-        """
-        return {
-            "probability_is_positive_review" : self.probability_is_positive_review,
-            "probability_is_negative_review" : self.probability_is_negative_review,
-            "word_probabilites" : self.word_probabilites
-        }

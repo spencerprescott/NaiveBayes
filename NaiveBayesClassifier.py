@@ -22,25 +22,23 @@ class NaiveBayesClassifier(object):
         # Populate word_count array with 2 arrays, word_count[0] is for the 0 reviews and word_count[1] is
         # for the 1 reviews. Each element of those arrays contain a dictionary for the word count for a specific review
         ReviewParser.parse_for_training(reviews, word_count)
-        review_word_counts = [[], []]
-        review_word_counts[0] = word_count[0]
-        review_word_counts[1] = word_count[1]
 
-        #self.remove_stop_words(review_word_counts)
-        self.create_model(review_word_counts)
+        self.create_model(word_count)
         end = time.clock()
-        self.time_to_train_string = str(end - start) + " seconds (training)"
+        self.time_to_train_string = str(int(end - start)) + " seconds (training)"
 
     def classify(self):
         start = time.clock()
         reviews = open(self.testing_file, "r")
         parsed_reviews = ReviewParser.parse_for_labeling(reviews)
         classified_reviews = self.classify_reviews(parsed_reviews)
+        # This method will print the labels followed by a newline
         self.get_classification_accuracy(classified_reviews)
         self.run_classification_on_training()
         end = time.clock()
-        self.time_to_label_string = str(end - start) + " seconds (labeling)"
+        self.time_to_label_string = str(int(end - start)) + " seconds (labeling)"
 
+        # Print all the required timing and accuracy
         print(self.time_to_train_string)
         print(self.time_to_label_string)
         print(self.training_accuracy_string)
@@ -51,31 +49,8 @@ class NaiveBayesClassifier(object):
     # Training
     def create_model(self, review_word_counts):
         self.model = DataModel(len(review_word_counts[1]), len(review_word_counts[0]))
-        word_sums = self.get_sum_of_words(review_word_counts)
-        self.model.generate_word_probabilites(word_sums)
+        self.model.generate_word_probabilites(review_word_counts[1], review_word_counts[0])
 
-    def get_sum_of_words(self, review_word_counts):
-        word_sums = {
-            "positive" : {},
-            "negative" : {}
-        }
-        for positive_review_words, negative_review_words in zip(review_word_counts[1], review_word_counts[0]):
-            for word in positive_review_words:
-                if word in word_sums["positive"]:
-                    word_sums["positive"][word] += positive_review_words[word]
-                else:
-                    word_sums["positive"][word] = positive_review_words[word]
-            for word in negative_review_words:
-                if word in word_sums["negative"]:
-                    word_sums["negative"][word] += negative_review_words[word]
-                else:
-                    word_sums["negative"][word] = negative_review_words[word]
-        return word_sums
-
-    def remove_stop_words(self, review_word_counts):
-        for positive_review_word_count, negative_review_word_count in zip(review_word_counts[1], review_word_counts[0]):
-            ordered_word_count_positive = sorted(positive_review_word_count, key=positive_review_word_count.get, reverse=True)
-            ordered_word_count_negative = sorted(negative_review_word_count, key=negative_review_word_count.get, reverse=True)
 
     # Classification
 
@@ -84,6 +59,7 @@ class NaiveBayesClassifier(object):
         for review_info in parsed_reviews:
             prob_neg = math.log10(self.model.probability_is_negative_review)
             prob_pos = math.log10(self.model.probability_is_positive_review)
+            # Use the sum of logs to deal with really small numbers log(P(C=c)) + sum_i(P(X=x_i|C=c))
             for word in review_info["words"][1:]:
                 if word in self.model.word_probabilites["negative"]:
                     conditional_neg = self.model.word_probabilites["negative"][word]
